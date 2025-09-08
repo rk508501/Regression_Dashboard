@@ -41,10 +41,16 @@ const CustomLegend = ({ payload, testData }: { payload?: any[]; testData: TestDa
 };
 
 const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
-  if (percent < 0.05) return null; // Don't show label if slice is too small
+  if (percent < 0.02) return null; // Don't show label if slice is too small (< 2%)
   
   const RADIAN = Math.PI / 180;
-  const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+  const isThickSlice = percent >= 0.08; // 8% threshold for thick vs thin slices
+  
+  // For thick slices, position inside; for thin slices, position outside
+  const radius = isThickSlice 
+    ? innerRadius + (outerRadius - innerRadius) * 0.5 
+    : outerRadius + 25;
+    
   const x = cx + radius * Math.cos(-midAngle * RADIAN);
   const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
@@ -52,7 +58,7 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
     <text 
       x={x} 
       y={y} 
-      fill="white" 
+      fill={isThickSlice ? "white" : "hsl(var(--foreground))"} 
       textAnchor={x > cx ? 'start' : 'end'} 
       dominantBaseline="central"
       className="text-xs font-medium"
@@ -78,7 +84,7 @@ export const ProjectCard = ({ projectName, testData, highlights }: ProjectCardPr
                 cy="50%"
                 labelLine={false}
                 label={renderCustomizedLabel}
-                outerRadius={80}
+                outerRadius={100}
                 fill="#8884d8"
                 dataKey="value"
                 strokeWidth={2}
